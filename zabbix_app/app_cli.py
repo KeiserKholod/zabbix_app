@@ -65,4 +65,8 @@ class InitArgsParser():
 
     def get_all_args(self):
         """Возвращает обьединение аргументов из cli и .conf с преимуществом у  cli"""
-        return self.config_args_dict | self.cli_args_dict
+        result = dict(self.config_args_dict)
+        for key in self.cli_args_dict.keys():
+            result[key] = self.cli_args_dict[key]
+
+        return result
