@@ -1,4 +1,5 @@
 import copy
+import os
 
 from pyzabbix import ZabbixAPI
 
@@ -9,6 +10,7 @@ class ZabbixConfigGetter:
     def __init__(self, host_list: list, args: dict):
         self.current_hosts = host_list
         self.zabbix_obj = ZabbixObject(args)
+        self.root = args["saving_dir"]
 
     def get_all_objects_configs(self):
         for host in self.current_hosts:
@@ -17,6 +19,36 @@ class ZabbixConfigGetter:
             self._get_host_macros(host)
             self._get_host_interfaces(host)
             self._get_host_items(host)
+
+    def write_configs_on_disk(self):
+
+        for host in self.current_hosts:
+            path = "".join([self.root, "hosts\\", host.host, "\\"])
+            os.makedirs(path, exist_ok=True)
+            hostf = "".join([path, "host.conf"])
+            templatesf = "".join([path, "templates.conf"])
+            macrosf = "".join([path, "macros.conf"])
+            itemsf = "".join([path, "items.conf"])
+            groupsf = "".join([path, "groups.conf"])
+            interfacesf = "".join([path, "interfaces.conf"])
+            with open(hostf, "w+") as file:
+                result = {"host": host.host, "name": host.name, "hostid": host.hostid}
+                file.write(result.__repr__())
+            with open(groupsf, "w+") as file:
+                result = host.groups.__repr__()
+                file.write(result)
+            with open(interfacesf, "w+") as file:
+                result = host.interfaces.__repr__()
+                file.write(result)
+            with open(templatesf, "w+") as file:
+                result = host.templates.__repr__()
+                file.write(result)
+            with open(macrosf, "w+") as file:
+                result = host.macros.__repr__()
+                file.write(result)
+            with open(itemsf, "w+") as file:
+                result = host.non_templates_items.__repr__()
+                file.write(result)
 
     def _get_host_templates(self, host: ZabbixHost):
         templates_raw = self.zabbix_obj.zabbix_api.do_request('host.get',

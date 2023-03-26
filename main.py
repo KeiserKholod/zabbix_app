@@ -19,3 +19,4 @@ if __name__ == '__main__':
         conf_getter.get_all_objects_configs()
         print()
         print("items: " + str(len(part)) + " " + part.__str__())
+        conf_getter.write_configs_on_disk()
