@@ -16,6 +16,7 @@ class ZabbixConfigGetter:
             self._get_host_groups(host)
             self._get_host_macros(host)
             self._get_host_interfaces(host)
+            self._get_host_items(host)
 
     def _get_host_templates(self, host: ZabbixHost):
         templates_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
@@ -48,6 +49,23 @@ class ZabbixConfigGetter:
                                                                {"output": "hostid",
                                                                 "selectInterfaces": "extend",
                                                                 "filter": {"hostid": host.hostid}})["result"]
-        for m in interfaces_raw:
-            if m.keys().__contains__("interfaces"):
-                host.interfaces = m["interfaces"]
+        for i in interfaces_raw:
+            if i.keys().__contains__("interfaces"):
+                host.interfaces = i["interfaces"]
+
+    def _get_host_items(self, host: ZabbixHost):
+        # items_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
+        #                                                   {"output": "hostid",
+        #                                                    "selectItems": "extend",
+        #                                                    "filter": {"hostid": host.hostid}})["result"]
+
+        items_raw = self.zabbix_obj.zabbix_api.do_request('item.get',
+                                                          {"output": ["templateid"],
+                                                           "hostids": host.hostid})["result"]
+        # templateid
+        items = []
+        for item in items_raw:
+            if item.keys().__contains__("templateid"):
+                if item["templateid"] == "0":
+                    items.append(item)
+        host.non_templates_items = items
