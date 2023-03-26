@@ -60,7 +60,7 @@ class ZabbixConfigGetter:
         #                                                    "filter": {"hostid": host.hostid}})["result"]
 
         items_raw = self.zabbix_obj.zabbix_api.do_request('item.get',
-                                                          {"output": ["templateid"],
+                                                          {"output": "extend",
                                                            "hostids": host.hostid})["result"]
         # templateid
         items = []
