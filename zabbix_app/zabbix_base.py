@@ -61,6 +61,7 @@ class ZabbixHost:
         self.groups = []
         self.macros = []
         self.templates = []
+        self.interfaces = []
         self.non_templates_items = []
 
     def __str__(self):

@@ -15,6 +15,7 @@ class ZabbixConfigGetter:
             self._get_host_templates(host)
             self._get_host_groups(host)
             self._get_host_macros(host)
+            self._get_host_interfaces(host)
 
     def _get_host_templates(self, host: ZabbixHost):
         templates_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
@@ -27,8 +28,9 @@ class ZabbixConfigGetter:
     def _get_host_groups(self, host: ZabbixHost):
         groups_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
                                                            {"output": "hostid",
-                                                            "selectGroups": ["name", "groupid"],
+                                                            "selectGroups": "extend",
                                                             "filter": {"hostid": host.hostid}})["result"]
+        # ["name", "groupid"]
         for g in groups_raw:
             host.groups = g["groups"]
 
@@ -40,3 +42,12 @@ class ZabbixConfigGetter:
         for m in macros_raw:
             if m.keys().__contains__("macros"):
                 host.macros = m["macros"]
+
+    def _get_host_interfaces(self, host: ZabbixHost):
+        interfaces_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
+                                                               {"output": "hostid",
+                                                                "selectInterfaces": "extend",
+                                                                "filter": {"hostid": host.hostid}})["result"]
+        for m in interfaces_raw:
+            if m.keys().__contains__("interfaces"):
+                host.interfaces = m["interfaces"]
