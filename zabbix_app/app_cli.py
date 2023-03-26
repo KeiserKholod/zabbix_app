@@ -16,11 +16,11 @@ class InitArgsParser():
         parser = argparse.ArgumentParser()
         parser.add_argument('-l', '--log', default=None, dest="log",
                             help='Записывать лог в файл <filename>')
-        parser.add_argument('link', default=None,
+        parser.add_argument('--link', default=None,
                             help='Адрес Zabbix сервера.\nПример: Http://zabbix.local/zabbix')
-        parser.add_argument('-n', '--login', default="admin", dest="login",
+        parser.add_argument('-n', '--login', default=None, dest="login",
                             help='Имя пользователя Zabbix')
-        parser.add_argument('-p', '--pass', default="root", dest="pass",
+        parser.add_argument('-p', '--pass', default=None, dest="pass",
                             help='Имя пользователя Zabbix')
         parser.add_argument('-g', '--git', default=None, dest="git",
                             help='Адрес GIT-сервера')
@@ -38,7 +38,7 @@ class InitArgsParser():
         with open(conf_file, "r") as file:
             for line in file.readlines():
                 if line.find("#") == -1:
-                    data.append(line)
+                    data.append(line.replace(" ", ""))
         return "\n".join(data)
 
     def parse_config_args(self, raw_args: str):
