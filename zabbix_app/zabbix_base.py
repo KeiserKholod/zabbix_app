@@ -65,9 +65,9 @@ class ZabbixHost:
         self.non_templates_items = []
 
     def __str__(self):
-        return "name: '{}'; host: '{}'; hostid: '{}'; groups: {}; macros: {}; templates: {}; non templates items: {}".format(
+        return "name: '{}'; host: '{}'; hostid: '{}'; groups: {}; macros: {}; templates: {}; interfaces: {}; non templates items: {}".format(
             self.name, self.host, self.hostid, self.groups, self.macros,
-            self.templates, self.non_templates_items)
+            self.templates, self.interfaces, self.non_templates_items)
 
     def __repr__(self):
         return self.__str__()
