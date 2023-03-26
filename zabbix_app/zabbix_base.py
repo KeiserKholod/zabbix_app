@@ -6,7 +6,6 @@ class ZabbixObject:
         self._args = args
         self.zabbix_api = self._init_connection()
         self.z_version = self.get_zabbix_version()
-        self.host_list = self.get_host_list()
 
     def get_zabbix_version(self):
         try:
@@ -34,6 +33,24 @@ class ZabbixObject:
             return ZabbixAPI(url=self._args['link'], user=self._args['login'], password=self._args['pass'])
         except Exception as e:
             raise e
+
+    def get_part_hosts(self, all_hosts: list, threads_count):
+        parts = []
+        len_all = len(all_hosts)
+        part_len = len_all // threads_count
+        iteration = 1
+        _exit = False
+        for i in range(0, len_all, part_len):
+            max_num = i + part_len
+            if (max_num > len_all) or (iteration == threads_count):
+                max_num = len_all
+                _exit = True
+            part = all_hosts[i:max_num]
+            parts.append(part)
+            iteration += 1
+            if _exit:
+                break
+        return parts
 
 
 class ZabbixHost:
