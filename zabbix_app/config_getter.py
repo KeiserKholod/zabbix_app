@@ -1,4 +1,5 @@
 import copy
+import json
 import os
 
 from pyzabbix import ZabbixAPI
@@ -33,22 +34,22 @@ class ZabbixConfigGetter:
             interfacesf = "".join([path, "interfaces.conf"])
             with open(hostf, "w+") as file:
                 result = {"host": host.host, "name": host.name, "hostid": host.hostid}
-                file.write(result.__repr__())
+                file.write(json.dumps(result, indent=3))
             with open(groupsf, "w+") as file:
-                result = host.groups.__repr__()
-                file.write(result)
+                result = host.groups
+                file.write(json.dumps(result, indent=4))
             with open(interfacesf, "w+") as file:
-                result = host.interfaces.__repr__()
-                file.write(result)
+                result = host.interfaces
+                file.write(json.dumps(result, indent=4))
             with open(templatesf, "w+") as file:
-                result = host.templates.__repr__()
-                file.write(result)
+                result = host.templates
+                file.write(json.dumps(result, indent=4))
             with open(macrosf, "w+") as file:
-                result = host.macros.__repr__()
-                file.write(result)
+                result = host.macros
+                file.write(json.dumps(result, indent=4))
             with open(itemsf, "w+") as file:
-                result = host.non_templates_items.__repr__()
-                file.write(result)
+                result = host.non_templates_items
+                file.write(json.dumps(result, indent=4))
 
     def _get_host_templates(self, host: ZabbixHost):
         templates_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
