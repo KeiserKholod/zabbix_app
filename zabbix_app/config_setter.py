@@ -1,8 +1,10 @@
 import copy
 import json
 import os
-
+from threading import Thread
+from multiprocessing import Process
 from pyzabbix import ZabbixAPI
+import time
 
 from zabbix_app.zabbix_base import ZabbixObject, ZabbixHost
 
@@ -69,8 +71,26 @@ class ZabbixConfigSetter:
                                                        {"hostid": zab_host.hostid,
                                                         "macros": macros_list})
 
-        # не работает
+        #  так как некоторые обьекты read-only и нет программной возможности проверки - приходится отправлять поштучно
+        # на один хост уходит около минуты; сильно грузится заббикс
         items_list = json.loads(zab_host.non_templates_items)
-        items = self.zabbix_obj.zabbix_api.do_request('host.update',
-                                                      {"hostid": zab_host.hostid,
-                                                       "items": items_list})
+        for item in items_list:
+            for key in item.keys():
+                if not key == "itemid":
+                    try:
+                        p = Process(target=self.zabbix_obj.zabbix_api.do_request, args=['item.update',
+                                                                                        {"itemid": item["itemid"],
+                                                                                         key: item[key]}])
+                        p.run()
+                        # time.sleep(0.1)
+                        # self.zabbix_obj.zabbix_api.do_request('item.update',
+                        #                                       {"itemid": item["itemid"], key: item[key]})
+                    except Exception as e:
+                        pass
+
+        # for item in items_list:
+        #     try:
+        #         self.zabbix_obj.zabbix_api.do_request('item.update',
+        #                                               item)
+        #     except Exception as e:
+        #         pass
