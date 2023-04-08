@@ -40,7 +40,7 @@ class ZabbixConfigSetter:
     def set_config_for_all(self):
         for hostname in self.hosts_to_change:
             zab_host = self.get_data_from_file(hostname)
-            print(zab_host)
+            print(zab_host.host)
             self.set_config(zab_host)
 
     def set_config(self, zab_host: ZabbixHost):
