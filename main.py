@@ -17,7 +17,7 @@ if __name__ == '__main__':
         parts = zabbix_connection.get_part_hosts(hosts, threads_count)
         for part in parts:
             cs = ZabbixConfigSetter(part, all_args)
-            cs.set_config_for_all()
+            cs.upd_config_for_all()
         print("Set Successful")
     else:
         all_hosts = zabbix_connection.get_host_list()
