@@ -26,6 +26,8 @@ class InitArgsParser():
                             help='Адрес GIT-сервера')
         parser.add_argument('-c', '--conf', default=None, dest="conf_file",
                             help='Изменить адрес конфигурационного файла <filename>')
+        parser.add_argument('-s', '--set', action='store_true', dest="set_conf",
+                            help='Изменить конфигурации хостов из файла to_change.conf')
         return parser
 
     def get_config_args(self):
@@ -40,6 +42,19 @@ class InitArgsParser():
                 if line.find("#") == -1:
                     data.append(line.replace(" ", ""))
         return "\n".join(data)
+
+    def get_to_change_hosts(self):
+        """Получает данные из файла с хостами для изменений без комментариев"""
+        to_change_file = "to_change.conf"
+        keys = self.cli_args_dict.keys()
+        if keys.__contains__("to_change"):
+            to_change_file = self.cli_args_dict["to_change"]
+        data = []
+        with open(to_change_file, "r") as file:
+            for line in file.readlines():
+                if line.find("#") == -1:
+                    data.append(line)
+        return data
 
     def parse_config_args(self, raw_args: str):
         """Сохраняет данные, полученные из конфигурационного файла в словарь"""
