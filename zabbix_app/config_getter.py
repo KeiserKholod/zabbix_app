@@ -23,14 +23,14 @@ class ZabbixConfigGetter:
     def write_configs_on_disk(self):
         """Запись конфигураций в файлы на диск"""
         for host in self.current_hosts:
-            path = "".join([self.root, "hosts\\", host.host, "\\"])
+            path = os.path.join(self.root, 'hosts', host.host)
             os.makedirs(path, exist_ok=True)
-            hostf = "".join([path, "host.conf"])
-            templatesf = "".join([path, "templates.conf"])
-            macrosf = "".join([path, "macros.conf"])
-            itemsf = "".join([path, "items.conf"])
-            groupsf = "".join([path, "groups.conf"])
-            interfacesf = "".join([path, "interfaces.conf"])
+            hostf = os.path.join(path, "host.conf")
+            templatesf = os.path.join(path, "templates.conf")
+            macrosf = os.path.join(path, "macros.conf")
+            itemsf = os.path.join(path, "items.conf")
+            groupsf = os.path.join(path, "groups.conf")
+            interfacesf = os.path.join(path, "interfaces.conf")
             with open(hostf, "w+") as file:
                 result = {"host": host.host, "name": host.name, "hostid": host.hostid}
                 file.write(json.dumps(result, indent=3))

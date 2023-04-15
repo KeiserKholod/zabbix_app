@@ -1,4 +1,5 @@
 import json
+import os
 from threading import Thread
 
 from zabbix_app.zabbix_base import ZabbixObject, ZabbixHost
@@ -14,13 +15,13 @@ class ZabbixConfigSetter:
 
     def get_data_from_file(self, hostname: str):
         zab_host = ZabbixHost()
-        path = "".join([self.root, "hosts\\", hostname, "\\"])
-        hostf = "".join([path, "host.conf"])
-        templatesf = "".join([path, "templates.conf"])
-        macrosf = "".join([path, "macros.conf"])
-        itemsf = "".join([path, "items.conf"])
-        groupsf = "".join([path, "groups.conf"])
-        interfacesf = "".join([path, "interfaces.conf"])
+        path = os.path.join(self.root, 'hosts', hostname)
+        hostf = os.path.join(path, "host.conf")
+        templatesf = os.path.join(path, "templates.conf")
+        macrosf = os.path.join(path, "macros.conf")
+        itemsf = os.path.join(path, "items.conf")
+        groupsf = os.path.join(path, "groups.conf")
+        interfacesf = os.path.join(path, "interfaces.conf")
         with open(hostf, "r") as file:
             host_json = file.read()
             host_all = json.loads(host_json)
