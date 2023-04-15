@@ -43,7 +43,7 @@ class ZabbixObject:
         """Функция для разделения списка всех хостов на равные по размеру подгруппы для многопоточной работы"""
         parts = []
         len_all = len(all_hosts)
-        part_len = len_all // threads_count
+        part_len = max(1, len_all // threads_count)
         iteration = 1
         _exit = False
         for i in range(0, len_all, part_len):

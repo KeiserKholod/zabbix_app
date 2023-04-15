@@ -26,6 +26,8 @@ class InitArgsParser():
                             help='Адрес GIT-сервера')
         parser.add_argument('-c', '--conf', default=None, dest="conf_file",
                             help='Изменить адрес конфигурационного файла <filename>')
+        parser.add_argument('-u', '--cpu', default=None, dest="max_cpu",
+                            help='Максимальное количество логических процессоров, занимаемое программой')
         parser.add_argument('-s', '--set', action='store_true', dest="set_conf",
                             help='Изменить конфигурации хостов из файла to_change.conf')
         return parser
