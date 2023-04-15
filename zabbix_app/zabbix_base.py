@@ -2,18 +2,22 @@ from pyzabbix.api import ZabbixAPI
 
 
 class ZabbixObject:
+    """Класс обьекта для взаимодействия сервером  Zabbix"""
+
     def __init__(self, args: dict):
         self._args = args
         self.zabbix_api = self._init_connection()
         self.z_version = self.get_zabbix_version()
 
     def get_zabbix_version(self):
+        """Получение версии подключенного Zabbix сервера"""
         try:
             return self.zabbix_api.do_request('apiinfo.version')
         except Exception as e:
             raise e
 
     def get_host_list(self):
+        """Получение списка обьектов класса ZabbixHost с name, hostid, host хоста"""
         host_list = []
         raw_list = None
         try:
@@ -29,12 +33,14 @@ class ZabbixObject:
         return host_list
 
     def _init_connection(self):
+        """Подключение к серверу Zabbix"""
         try:
             return ZabbixAPI(url=self._args['link'], user=self._args['login'], password=self._args['pass'])
         except Exception as e:
             raise e
 
     def get_part_hosts(self, all_hosts: list, threads_count):
+        """Функция для разделения списка всех хостов на равные по размеру подгруппы для многопоточной работы"""
         parts = []
         len_all = len(all_hosts)
         part_len = len_all // threads_count
@@ -54,6 +60,8 @@ class ZabbixObject:
 
 
 class ZabbixHost:
+    """Обьект для хранения информации о хосте"""
+
     def __init__(self):
         self.name = ""
         self.hostid = ""

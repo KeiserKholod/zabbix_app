@@ -1,19 +1,18 @@
-import copy
 import json
 import os
-
-from pyzabbix import ZabbixAPI
-
 from zabbix_app.zabbix_base import ZabbixObject, ZabbixHost
 
 
 class ZabbixConfigGetter:
+    """Класс обьекта для получения конфигураций с сервера"""
+
     def __init__(self, host_list: list, args: dict):
         self.current_hosts = host_list
         self.zabbix_obj = ZabbixObject(args)
         self.root = args["saving_dir"]
 
     def get_all_objects_configs(self):
+        """Получение шаблонов, групп, макросов, интерфейсов, не наследуемых, не discovered айтемов"""
         for host in self.current_hosts:
             self._get_host_templates(host)
             self._get_host_groups(host)
@@ -22,7 +21,7 @@ class ZabbixConfigGetter:
             self._get_host_items(host)
 
     def write_configs_on_disk(self):
-
+        """Запись конфигураций в файлы на диск"""
         for host in self.current_hosts:
             path = "".join([self.root, "hosts\\", host.host, "\\"])
             os.makedirs(path, exist_ok=True)
@@ -52,6 +51,7 @@ class ZabbixConfigGetter:
                 file.write(json.dumps(result, indent=4))
 
     def _get_host_templates(self, host: ZabbixHost):
+        """Получение шаблонов хоста"""
         templates_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
                                                               {"output": "hostid",
                                                                "selectParentTemplates": ["templateid", "name"],
@@ -60,6 +60,7 @@ class ZabbixConfigGetter:
             host.templates = t["parentTemplates"]
 
     def _get_host_groups(self, host: ZabbixHost):
+        """Получение групп хоста"""
         groups_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
                                                            {"output": "hostid",
                                                             "selectGroups": "extend",
@@ -69,6 +70,7 @@ class ZabbixConfigGetter:
             host.groups = g["groups"]
 
     def _get_host_macros(self, host: ZabbixHost):
+        """Получение макросов хоста"""
         macros_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
                                                            {"output": "hostid",
                                                             "selectMacros": "extend",
@@ -78,6 +80,7 @@ class ZabbixConfigGetter:
                 host.macros = m["macros"]
 
     def _get_host_interfaces(self, host: ZabbixHost):
+        """Получение интерфейсов хоста"""
         interfaces_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
                                                                {"output": "hostid",
                                                                 "selectInterfaces": "extend",
@@ -87,12 +90,12 @@ class ZabbixConfigGetter:
                 host.interfaces = i["interfaces"]
 
     def _get_host_items(self, host: ZabbixHost):
+        """Получение айтемов хоста. Не наследуемых от шаблона и не discovered."""
         readonly_params = ["error", "flags", "lastclock", "lastns", "lastvalue", "prevvalue",
                            "state", "templateid"]
         items_raw = self.zabbix_obj.zabbix_api.do_request('item.get',
                                                           {"output": "extend",
                                                            "hostids": host.hostid})["result"]
-        # templateid
         items = []
         for item in items_raw:
             if item.keys().__contains__("templateid"):

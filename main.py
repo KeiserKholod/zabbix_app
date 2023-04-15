@@ -12,6 +12,7 @@ if __name__ == '__main__':
     zabbix_connection = ZabbixObject(all_args)
     print("Zabbix version: " + zabbix_connection.z_version["result"])
 
+    # запись конфигов с диска на сервер
     if all_args["set_conf"]:
         hosts = init_args_parser.get_to_change_hosts()
         parts = zabbix_connection.get_part_hosts(hosts, threads_count)
@@ -19,15 +20,13 @@ if __name__ == '__main__':
             cs = ZabbixConfigSetter(part, all_args)
             cs.upd_config_for_all()
         print("Set Successful")
+
+    # Получение конфигов с сервера
     else:
         all_hosts = zabbix_connection.get_host_list()
-        # print(all_hosts)
         parts = zabbix_connection.get_part_hosts(all_hosts, threads_count)
-        # print("all hosts count: " + str(len(all_hosts)))
         for part in parts:
             conf_getter = ZabbixConfigGetter(part, all_args)
             conf_getter.get_all_objects_configs()
-            # print()
-            # print("items: " + str(len(part)) + " " + part.__str__())
             conf_getter.write_configs_on_disk()
             print("Get Successful")
