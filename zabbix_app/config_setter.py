@@ -73,17 +73,33 @@ class ZabbixConfigSetter:
         macros = self.zabbix_obj.zabbix_api.do_request('host.update',
                                                        {"hostid": zab_host.hostid,
                                                         "macros": macros_list})
+        # айтемы
+        self._upd_or_create_item(zab_host)
 
-        # Поочередная отправка параметров айтема для обновления. Для избегания ошибок их обнаружения
+    def _upd_or_create_item(self, zab_host):
+        """ Поочередная отправка параметров айтема для обновления. Для избегания ошибок их обнаружения.
+         Если айтема не существует, то он создается."""
         items_list = json.loads(zab_host.non_templates_items)
         for item in items_list:
-            for key in item.keys():
-                if not key == "itemid":
-                    try:
-                        t = Thread(target=self.zabbix_obj.zabbix_api.do_request, args=['item.update',
-                                                                                       {"itemid": item["itemid"],
-                                                                                        key: item[key]}])
-                        t.run()
-                        # time.sleep(0.1)
-                    except Exception as e:
-                        print(e)
+            exist = True
+            try:
+                # проверка, существует ли айтем
+                get_item = self.zabbix_obj.zabbix_api.do_request('item.get',
+                                                                 {"output": "itemid", "itemids": item["itemid"]})[
+                    "result"]
+                print(item["itemid"])
+                if len(get_item) == 0:
+                    exist = False
+                    # создаем айтем, если его не существовало
+                    create_item = self.zabbix_obj.zabbix_api.do_request("item.create", item)["result"]
+            except Exception as e:
+                print(e)
+            if exist:
+                for key in item.keys():
+                    if not key == "itemid":
+                        try:
+                            self.zabbix_obj.zabbix_api.do_request("item.update",
+                                                                  {"itemid": item["itemid"],
+                                                                   key: item[key]})["result"]
+                        except Exception as e:
+                            print(e)
