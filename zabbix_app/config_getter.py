@@ -87,11 +87,8 @@ class ZabbixConfigGetter:
                 host.interfaces = i["interfaces"]
 
     def _get_host_items(self, host: ZabbixHost):
-        # items_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
-        #                                                   {"output": "hostid",
-        #                                                    "selectItems": "extend",
-        #                                                    "filter": {"hostid": host.hostid}})["result"]
-
+        readonly_params = ["error", "flags", "lastclock", "lastns", "lastvalue", "prevvalue",
+                           "state", "templateid"]
         items_raw = self.zabbix_obj.zabbix_api.do_request('item.get',
                                                           {"output": "extend",
                                                            "hostids": host.hostid})["result"]
@@ -100,5 +97,17 @@ class ZabbixConfigGetter:
         for item in items_raw:
             if item.keys().__contains__("templateid"):
                 if item["templateid"] == "0":
-                    items.append(item)
+                    _discovery_resp = self.zabbix_obj.zabbix_api.do_request('item.get',
+                                                                            {"output": "parent_itemid",
+                                                                             "itemids": item["itemid"],
+                                                                             "selectItemDiscovery": ["parent_itemid"]})[
+                        "result"][0]
+                    # если есть родительский обьект, то это discovered item - пропускаем
+                    if (len(_discovery_resp["itemDiscovery"]) != 0):
+                        continue
+                    _item = dict()
+                    for key in item.keys():
+                        if not (key in readonly_params):
+                            _item[key] = item[key]
+                    items.append(_item)
         host.non_templates_items = items

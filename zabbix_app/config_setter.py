@@ -86,7 +86,7 @@ class ZabbixConfigSetter:
                         # self.zabbix_obj.zabbix_api.do_request('item.update',
                         #                                       {"itemid": item["itemid"], key: item[key]})
                     except Exception as e:
-                        pass
+                        print(e)
 
         # for item in items_list:
         #     try:
