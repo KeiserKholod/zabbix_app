@@ -1,6 +1,7 @@
 import json
 import os
 from zabbix_app.zabbix_base import ZabbixObject, ZabbixHost
+from collections import OrderedDict
 
 
 class ZabbixConfigGetter:
@@ -33,6 +34,7 @@ class ZabbixConfigGetter:
             interfacesf = os.path.join(path, "interfaces.conf")
             with open(hostf, "w+") as file:
                 result = {"host": host.host, "name": host.name, "hostid": host.hostid}
+                result = OrderedDict(sorted(result.items()))
                 file.write(json.dumps(result, indent=3))
             with open(groupsf, "w+") as file:
                 result = host.groups
@@ -56,8 +58,12 @@ class ZabbixConfigGetter:
                                                               {"output": "hostid",
                                                                "selectParentTemplates": ["templateid", "name"],
                                                                "hostids": host.hostid})["result"]
-        for t in templates_raw:
-            host.templates = t["parentTemplates"]
+        _temp = templates_raw[0]["parentTemplates"]
+        templates = []
+        for t in _temp:
+            t = OrderedDict(sorted(t.items()))
+            templates.append(t)
+        host.templates = templates
 
     def _get_host_groups(self, host: ZabbixHost):
         """Получение групп хоста"""
@@ -66,8 +72,12 @@ class ZabbixConfigGetter:
                                                             "selectGroups": "extend",
                                                             "filter": {"hostid": host.hostid}})["result"]
         # ["name", "groupid"]
-        for g in groups_raw:
-            host.groups = g["groups"]
+        _groups = groups_raw[0]["groups"]
+        groups = []
+        for g in _groups:
+            g = OrderedDict(sorted(g.items()))
+            groups.append(g)
+        host.groups = groups
 
     def _get_host_macros(self, host: ZabbixHost):
         """Получение макросов хоста"""
@@ -75,9 +85,13 @@ class ZabbixConfigGetter:
                                                            {"output": "hostid",
                                                             "selectMacros": "extend",
                                                             "filter": {"hostid": host.hostid}})["result"]
-        for m in macros_raw:
-            if m.keys().__contains__("macros"):
-                host.macros = m["macros"]
+        _macros = macros_raw[0]
+        macros = []
+        if _macros.keys().__contains__("macros"):
+            _macros = _macros["macros"]
+            for macro in _macros:
+                macros.append(OrderedDict(sorted(macro.items())))
+            host.macros = macros
 
     def _get_host_interfaces(self, host: ZabbixHost):
         """Получение интерфейсов хоста"""
@@ -85,9 +99,13 @@ class ZabbixConfigGetter:
                                                                {"output": "hostid",
                                                                 "selectInterfaces": "extend",
                                                                 "filter": {"hostid": host.hostid}})["result"]
-        for i in interfaces_raw:
-            if i.keys().__contains__("interfaces"):
-                host.interfaces = i["interfaces"]
+        _interfaces = interfaces_raw[0]
+        interfaces = []
+        if _interfaces.keys().__contains__("interfaces"):
+            _interfaces = _interfaces["interfaces"]
+            for i in _interfaces:
+                interfaces.append(OrderedDict(sorted(i.items())))
+            host.interfaces = interfaces
 
     def _get_host_items(self, host: ZabbixHost):
         """Получение айтемов хоста. Не наследуемых от шаблона и не discovered."""
@@ -112,5 +130,6 @@ class ZabbixConfigGetter:
                     for key in item.keys():
                         if not (key in readonly_params):
                             _item[key] = item[key]
+                    _item = OrderedDict(sorted(_item.items()))
                     items.append(_item)
         host.non_templates_items = items
