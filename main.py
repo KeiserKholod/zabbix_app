@@ -28,10 +28,10 @@ def call_git(path_to_dir):
     os.chdir(path_to_dir)
     answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
     if answ.find("not a git repository") > -1:
-        print("GIT: Creating git-repo")  # Hello from the other side
+        app_cli.write_log_file(all_args["log"], "GIT: Creating git-repo")
         answ = subprocess.run(["git", "init"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
         if answ.find("initialized") > -1:
-            print("GIT: Repo initialized in " + path_to_dir)
+            app_cli.write_log_file(all_args["log"], "GIT: Repo initialized in " + path_to_dir)
 
     answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
     if answ.find("untracked files present") > -1 or answ.find("Changes not staged for commit") > -1:
@@ -39,9 +39,9 @@ def call_git(path_to_dir):
                               stderr=subprocess.STDOUT).__str__()
         answ = subprocess.run(["git", "commit", "-m", '"message"'], stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT).__str__()
-        print("GIT: Commit created")
+        app_cli.write_log_file(all_args["log"], "GIT: Commit created")
     else:
-        print("GIT: nothing to commit")
+        app_cli.write_log_file(all_args["log"], "GIT: nothing to commit")
 
     os.chdir(current_dir)
 
@@ -49,7 +49,7 @@ def call_git(path_to_dir):
 if __name__ == '__main__':
     init_args_parser = app_cli.InitArgsParser()
     all_args = init_args_parser.get_all_args()
-    print(all_args)
+    # print(all_args)
 
     # узнаем доступное кол-во процессов для многопоточной работы
     cpu_striction = sys.maxsize
@@ -59,6 +59,7 @@ if __name__ == '__main__':
 
     zabbix_connection = ZabbixObject(all_args)
     print("Zabbix version: " + zabbix_connection.z_version["result"])
+    app_cli.write_log_file(all_args["log"], "#" * 5 + " SESSION START " + "#" * 5)
 
     # запись конфигов с диска на сервер
     if all_args["set_conf"]:
@@ -86,3 +87,4 @@ if __name__ == '__main__':
         for p in process:
             p.join()
         call_git(all_args["saving_dir"])
+    app_cli.write_log_file(all_args["log"], "#" * 5 + " SESSION END " + "#" * 5)

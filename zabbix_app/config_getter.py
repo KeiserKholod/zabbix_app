@@ -1,5 +1,7 @@
 import json
 import os
+
+from zabbix_app import app_cli
 from zabbix_app.zabbix_base import ZabbixObject, ZabbixHost
 from collections import OrderedDict
 
@@ -11,6 +13,15 @@ class ZabbixConfigGetter:
         self.current_hosts = host_list
         self.zabbix_obj = ZabbixObject(args)
         self.root = args["saving_dir"]
+        self.err_lvl = 0
+        self.log_path = args["log"]
+
+    def do_log(self, zab_host):
+        if self.err_lvl == 0:
+            app_cli.write_log_file(self.log_path, "OK GET: " + zab_host.host)
+        else:
+            app_cli.write_log_file(self.log_path, "ERROR GET: " + zab_host.host)
+        self.err_lvl = 0
 
     def get_all_objects_configs(self):
         """Получение шаблонов, групп, макросов, интерфейсов, не наследуемых, не discovered айтемов"""
@@ -20,6 +31,7 @@ class ZabbixConfigGetter:
             self._get_host_macros(host)
             self._get_host_interfaces(host)
             self._get_host_items(host)
+            self.do_log(host)
 
     def write_configs_on_disk(self):
         """Запись конфигураций в файлы на диск"""
@@ -54,82 +66,108 @@ class ZabbixConfigGetter:
 
     def _get_host_templates(self, host: ZabbixHost):
         """Получение шаблонов хоста"""
-        templates_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
-                                                              {"output": "hostid",
-                                                               "selectParentTemplates": ["templateid", "name"],
-                                                               "hostids": host.hostid})["result"]
-        _temp = templates_raw[0]["parentTemplates"]
-        templates = []
-        for t in _temp:
-            t = OrderedDict(sorted(t.items()))
-            templates.append(t)
-        host.templates = templates
+        try:
+            templates_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
+                                                                  {"output": "hostid",
+                                                                   "selectParentTemplates": ["templateid", "name"],
+                                                                   "hostids": host.hostid})["result"]
+            _temp = templates_raw[0]["parentTemplates"]
+            templates = []
+            for t in _temp:
+                t = OrderedDict(sorted(t.items()))
+                templates.append(t)
+            host.templates = templates
+        except Exception as e:
+            self.err_lvl += 1
+            print(e)
+            return 0
 
     def _get_host_groups(self, host: ZabbixHost):
         """Получение групп хоста"""
-        groups_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
-                                                           {"output": "hostid",
-                                                            "selectGroups": "extend",
-                                                            "filter": {"hostid": host.hostid}})["result"]
-        # ["name", "groupid"]
-        _groups = groups_raw[0]["groups"]
-        groups = []
-        for g in _groups:
-            g = OrderedDict(sorted(g.items()))
-            groups.append(g)
-        host.groups = groups
+        try:
+            groups_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
+                                                               {"output": "hostid",
+                                                                "selectGroups": "extend",
+                                                                "filter": {"hostid": host.hostid}})["result"]
+            # ["name", "groupid"]
+            _groups = groups_raw[0]["groups"]
+            groups = []
+            for g in _groups:
+                g = OrderedDict(sorted(g.items()))
+                groups.append(g)
+            host.groups = groups
+        except Exception as e:
+            self.err_lvl += 1
+            print(e)
+            return 0
 
     def _get_host_macros(self, host: ZabbixHost):
         """Получение макросов хоста"""
-        macros_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
-                                                           {"output": "hostid",
-                                                            "selectMacros": "extend",
-                                                            "filter": {"hostid": host.hostid}})["result"]
-        _macros = macros_raw[0]
-        macros = []
-        if _macros.keys().__contains__("macros"):
-            _macros = _macros["macros"]
-            for macro in _macros:
-                macros.append(OrderedDict(sorted(macro.items())))
-            host.macros = macros
+        try:
+            macros_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
+                                                               {"output": "hostid",
+                                                                "selectMacros": "extend",
+                                                                "filter": {"hostid": host.hostid}})["result"]
+            _macros = macros_raw[0]
+            macros = []
+            if _macros.keys().__contains__("macros"):
+                _macros = _macros["macros"]
+                for macro in _macros:
+                    macros.append(OrderedDict(sorted(macro.items())))
+                host.macros = macros
+        except Exception as e:
+            self.err_lvl += 1
+            print(e)
+            return 0
 
     def _get_host_interfaces(self, host: ZabbixHost):
         """Получение интерфейсов хоста"""
-        interfaces_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
-                                                               {"output": "hostid",
-                                                                "selectInterfaces": "extend",
-                                                                "filter": {"hostid": host.hostid}})["result"]
-        _interfaces = interfaces_raw[0]
-        interfaces = []
-        if _interfaces.keys().__contains__("interfaces"):
-            _interfaces = _interfaces["interfaces"]
-            for i in _interfaces:
-                interfaces.append(OrderedDict(sorted(i.items())))
-            host.interfaces = interfaces
+        try:
+            interfaces_raw = self.zabbix_obj.zabbix_api.do_request('host.get',
+                                                                   {"output": "hostid",
+                                                                    "selectInterfaces": "extend",
+                                                                    "filter": {"hostid": host.hostid}})["result"]
+            _interfaces = interfaces_raw[0]
+            interfaces = []
+            if _interfaces.keys().__contains__("interfaces"):
+                _interfaces = _interfaces["interfaces"]
+                for i in _interfaces:
+                    interfaces.append(OrderedDict(sorted(i.items())))
+                host.interfaces = interfaces
+        except Exception as e:
+            self.err_lvl += 1
+            print(e)
+            return 0
 
     def _get_host_items(self, host: ZabbixHost):
         """Получение айтемов хоста. Не наследуемых от шаблона и не discovered."""
-        readonly_params = ["error", "flags", "lastclock", "lastns", "lastvalue", "prevvalue",
-                           "state", "templateid"]
-        items_raw = self.zabbix_obj.zabbix_api.do_request('item.get',
-                                                          {"output": "extend",
-                                                           "hostids": host.hostid})["result"]
-        items = []
-        for item in items_raw:
-            if item.keys().__contains__("templateid"):
-                if item["templateid"] == "0":
-                    _discovery_resp = self.zabbix_obj.zabbix_api.do_request('item.get',
-                                                                            {"output": "parent_itemid",
-                                                                             "itemids": item["itemid"],
-                                                                             "selectItemDiscovery": ["parent_itemid"]})[
-                        "result"][0]
-                    # если есть родительский обьект, то это discovered item - пропускаем
-                    if (len(_discovery_resp["itemDiscovery"]) != 0):
-                        continue
-                    _item = dict()
-                    for key in item.keys():
-                        if not (key in readonly_params):
-                            _item[key] = item[key]
-                    _item = OrderedDict(sorted(_item.items()))
-                    items.append(_item)
-        host.non_templates_items = items
+        try:
+            readonly_params = ["error", "flags", "lastclock", "lastns", "lastvalue", "prevvalue",
+                               "state", "templateid"]
+            items_raw = self.zabbix_obj.zabbix_api.do_request('item.get',
+                                                              {"output": "extend",
+                                                               "hostids": host.hostid})["result"]
+            items = []
+            for item in items_raw:
+                if item.keys().__contains__("templateid"):
+                    if item["templateid"] == "0":
+                        _discovery_resp = self.zabbix_obj.zabbix_api.do_request('item.get',
+                                                                                {"output": "parent_itemid",
+                                                                                 "itemids": item["itemid"],
+                                                                                 "selectItemDiscovery": [
+                                                                                     "parent_itemid"]})[
+                            "result"][0]
+                        # если есть родительский обьект, то это discovered item - пропускаем
+                        if (len(_discovery_resp["itemDiscovery"]) != 0):
+                            continue
+                        _item = dict()
+                        for key in item.keys():
+                            if not (key in readonly_params):
+                                _item[key] = item[key]
+                        _item = OrderedDict(sorted(_item.items()))
+                        items.append(_item)
+            host.non_templates_items = items
+        except Exception as e:
+            self.err_lvl += 1
+            print(e)
+            return 0

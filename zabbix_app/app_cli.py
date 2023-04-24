@@ -1,5 +1,6 @@
 import argparse
 import sys
+from datetime import datetime
 
 
 class InitArgsParser():
@@ -87,3 +88,12 @@ class InitArgsParser():
             result[key] = self.cli_args_dict[key]
 
         return result
+
+
+def write_log_file(log_path, txt):
+    """Запись лога в файл и консоль"""
+    time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(txt + "; " + time + "; " + "\n")
+    if not (log_path is None):
+        with open(log_path, "a+") as file:
+            file.write(txt + "; " + time + "; " + "\n")
