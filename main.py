@@ -5,6 +5,7 @@ import sys
 
 import zabbix_app.app_cli as app_cli
 from zabbix_app.config_setter import ZabbixConfigSetter
+from zabbix_app.git_interractor import GitInterractor
 from zabbix_app.zabbix_base import ZabbixObject
 from zabbix_app.config_getter import ZabbixConfigGetter
 
@@ -20,30 +21,6 @@ def _set_conf_process(i, part, all_args):
     cs = ZabbixConfigSetter(part, all_args)
     cs.upd_config_for_all()
     print("Set Successful; Process: " + str(i))
-
-
-def call_git(path_to_dir):
-    current_dir = os.getcwd()
-
-    os.chdir(path_to_dir)
-    answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
-    if answ.find("not a git repository") > -1:
-        app_cli.write_log_file(all_args["log"], "GIT: Creating git-repo")
-        answ = subprocess.run(["git", "init"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
-        if answ.find("initialized") > -1:
-            app_cli.write_log_file(all_args["log"], "GIT: Repo initialized in " + path_to_dir)
-
-    answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
-    if answ.find("untracked files present") > -1 or answ.find("Changes not staged for commit") > -1:
-        answ = subprocess.run(["git", "add", "*"], stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT).__str__()
-        answ = subprocess.run(["git", "commit", "-m", '"message"'], stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT).__str__()
-        app_cli.write_log_file(all_args["log"], "GIT: Commit created")
-    else:
-        app_cli.write_log_file(all_args["log"], "GIT: nothing to commit")
-
-    os.chdir(current_dir)
 
 
 if __name__ == '__main__':
@@ -86,5 +63,6 @@ if __name__ == '__main__':
         # синхронизация с main процессом
         for p in process:
             p.join()
-        call_git(all_args["saving_dir"])
+        git_interractor = GitInterractor()
+        git_interractor.call_git(all_args["saving_dir"], all_args)
     app_cli.write_log_file(all_args["log"], "#" * 5 + " SESSION END " + "#" * 5)
