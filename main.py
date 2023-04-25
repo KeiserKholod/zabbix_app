@@ -2,6 +2,7 @@ import multiprocessing
 import os
 import subprocess
 import sys
+import time
 
 import zabbix_app.app_cli as app_cli
 from zabbix_app.config_setter import ZabbixConfigSetter
@@ -24,6 +25,7 @@ def _set_conf_process(i, part, all_args):
 
 
 if __name__ == '__main__':
+    start_time = time.perf_counter()
     init_args_parser = app_cli.InitArgsParser()
     all_args = init_args_parser.get_all_args()
     # print(all_args)
@@ -65,4 +67,13 @@ if __name__ == '__main__':
             p.join()
         git_interractor = GitInterractor()
         git_interractor.call_git(all_args["saving_dir"], all_args)
+        
+    # Вывод времени работы программы    
+    end_time = time.perf_counter()
+    total_time = end_time - start_time
+    time_measurement =  TimeMeasurement()
+    time_measurement.total_time
+    app_cli.write_log_file(all_args["log"], time_measurement)
+    
     app_cli.write_log_file(all_args["log"], "#" * 5 + " SESSION END " + "#" * 5)
+    
