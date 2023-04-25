@@ -36,6 +36,8 @@ class ZabbixConfigSetter:
             host_json = file.read()
             host_all = json.loads(host_json)
             zab_host.host = host_all["host"]
+            # можно брать запросом с сервера. Тогда получится создавать хост с нуля только по его hostname
+            # если хоста с именем нет, то создать
             zab_host.hostid = host_all["hostid"]
             zab_host.name = host_all["name"]
         with open(groupsf, "r") as file:
