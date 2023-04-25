@@ -44,12 +44,17 @@ if __name__ == '__main__':
     if all_args["set_conf"]:
         hosts = init_args_parser.get_to_change_hosts()
         parts = zabbix_connection.get_part_hosts(hosts, threads_count)
+        process = []
         for part in parts:
             i = 0
             for part in parts:
                 p = multiprocessing.Process(target=_set_conf_process, args=[i, part, all_args])
                 p.start()
+                process.append(p)
                 i += 1
+        # синхронизация с main процессом
+        for p in process:
+            p.join()
 
     # Получение конфигов с сервера
     else:
