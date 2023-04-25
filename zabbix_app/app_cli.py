@@ -3,20 +3,25 @@ import sys
 import time
 from datetime import datetime
 
+
 class TimeMeasurement():
     """Класс для хранения и вывода на экран информации по времени работы программы"""
-    
+
     def __init__(self, total_time):
         self.total_time = total_time
-        self.str_time = time.strftime("%H:%M:%S", self.total_time)
-    
+        self.hours = int(self.total_time // 360)
+        self.minutes = int((self.total_time - self.hours * 360) // 60)
+        self.seconds = int(self.total_time - self.hours * 360 - self.minutes * 60)
+
     def __str__(self):
-        return "TOTAL TIME: " + self.str_time
-    
+        return "TOTAL TIME: " + str(self.hours) + \
+            " hours; " + str(self.minutes) + \
+            " minutes; " + str(self.seconds) + \
+            " seconds"
+
     def __repr__(self):
         return self.__str__()
-        
-        
+
 
 class InitArgsParser():
     """Класс для сбора и хранения аргументов и конфгураций из коммандной строки и файла zabapp.conf"""

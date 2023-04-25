@@ -25,7 +25,7 @@ def _set_conf_process(i, part, all_args):
 
 
 if __name__ == '__main__':
-    start_time = time.perf_counter()
+    start_time = time.time()
     init_args_parser = app_cli.InitArgsParser()
     all_args = init_args_parser.get_all_args()
     # print(all_args)
@@ -72,12 +72,11 @@ if __name__ == '__main__':
             p.join()
         git_interractor = GitInterractor()
         git_interractor.call_git(all_args["saving_dir"], all_args)
-        
-    # Вывод времени работы программы    
-    end_time = time.perf_counter()
+
+    # Вывод времени работы программы
+    end_time = time.time()
     total_time = end_time - start_time
-    time_measurement =  TimeMeasurement(total_time)
-    app_cli.write_log_file(all_args["log"], time_measurement)
-    
+    time_measurement = app_cli.TimeMeasurement(total_time)
+    app_cli.write_log_file(all_args["log"], time_measurement.__str__())
+
     app_cli.write_log_file(all_args["log"], "#" * 5 + " SESSION END " + "#" * 5)
-    
