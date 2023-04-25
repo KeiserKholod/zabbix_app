@@ -76,8 +76,7 @@ if __name__ == '__main__':
     # Вывод времени работы программы    
     end_time = time.perf_counter()
     total_time = end_time - start_time
-    time_measurement =  TimeMeasurement()
-    time_measurement.total_time
+    time_measurement =  TimeMeasurement(total_time)
     app_cli.write_log_file(all_args["log"], time_measurement)
     
     app_cli.write_log_file(all_args["log"], "#" * 5 + " SESSION END " + "#" * 5)
