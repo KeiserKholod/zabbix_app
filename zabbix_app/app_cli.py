@@ -1,15 +1,17 @@
 import argparse
 import sys
+import time
 from datetime import datetime
 
 class TimeMeasurement():
     """Класс для хранения и вывода на экран информации по времени работы программы"""
     
-    def __init__(self):
-        self.total_time = 0
+    def __init__(self, total_time):
+        self.total_time = total_time
+        self.str_time = time.strftime("%H:%M:%S", self.total_time)
     
     def __str__(self):
-        return "TOTAL TIME: " + str(self.total_time) + " ms"
+        return "TOTAL TIME: " + self.str_time
     
     def __repr__(self):
         return self.__str__()
