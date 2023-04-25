@@ -2,6 +2,19 @@ import argparse
 import sys
 from datetime import datetime
 
+class TimeMeasurement():
+    """Класс для хранения и вывода на экран информации по времени работы программы"""
+    
+    def __init__(self):
+        self.total_time = 0
+    
+    def __str__(self):
+        return "TOTAL TIME: " + str(self.total_time) + " ms"
+    
+    def __repr__(self):
+        return self.__str__()
+        
+        
 
 class InitArgsParser():
     """Класс для сбора и хранения аргументов и конфгураций из коммандной строки и файла zabapp.conf"""
