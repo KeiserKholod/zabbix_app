@@ -71,8 +71,8 @@ if __name__ == '__main__':
             # синхронизация с main процессом
             for p in process:
                 p.join()
-            git_interractor = GitInterractor()
-            git_interractor.call_git(all_args["saving_dir"], all_args)
+        git_interractor = GitInterractor()
+        git_interractor.call_git(all_args["saving_dir"], all_args)
 
         # Вывод времени работы программы
         end_time = time.time()

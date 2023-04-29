@@ -3,6 +3,7 @@ import os
 from threading import Thread
 
 from zabbix_app import app_cli
+from zabbix_app.config_getter import ZabbixConfigGetter
 from zabbix_app.zabbix_base import ZabbixObject, ZabbixHost
 
 
@@ -13,6 +14,7 @@ class ZabbixConfigSetter:
         self.zabbix_obj = ZabbixObject(args)
         self.root = args["saving_dir"]
         self.log_path = args["log"]
+        self.args = args
         self.hosts_to_change = host_list
         self.err_lvl = 0
 
@@ -57,26 +59,61 @@ class ZabbixConfigSetter:
         try:
             for hostname in self.hosts_to_change:
                 zab_host = self.get_data_from_file(hostname)
-                self.upd_config(zab_host)
+                _host = self.ping_host(zab_host)
+                is_new = False
+                if len(_host) == 0:
+                    self.create_host(zab_host)
+                    is_new = True
+                self.upd_config(zab_host, is_new)
+                z_host = ZabbixHost()
+                z_host.host = zab_host.host
+                z_host.name = zab_host.name
+                z_host.hostid = zab_host.hostid
+                conf_getter = ZabbixConfigGetter([z_host], self.args)
+                conf_getter.get_all_objects_configs()
+                conf_getter.write_configs_on_disk()
         except KeyboardInterrupt as e:
             pass
 
-    def upd_config(self, zab_host: ZabbixHost):
-        """Обновление конфигурации айтема"""
-        # основные параметры: name, host
-        base = self.zabbix_obj.zabbix_api.do_request('host.update',
-                                                     {"hostid": zab_host.hostid, "name": zab_host.name,
-                                                      "host": zab_host.host})
-        # интерфейсы
-        interfaces_list = json.loads(zab_host.interfaces)
-        interfaces = self.zabbix_obj.zabbix_api.do_request('host.update',
-                                                           {"hostid": zab_host.hostid,
-                                                            "interfaces": interfaces_list})
-        # группы
+    def ping_host(self, zab_host: ZabbixHost):
+        """Проверяет, существует ли хост"""
+        raw_list = self.zabbix_obj.zabbix_api.do_request('host.get', {"output": ["hostid", "host"],
+                                                                      "filter": {"host": zab_host.host}})["result"]
+        return raw_list
+
+    def create_host(self, zab_host: ZabbixHost):
+        """Создание хоста по файлу конфигурации"""
         groups_list = json.loads(zab_host.groups)
-        groups = self.zabbix_obj.zabbix_api.do_request('host.update',
-                                                       {"hostid": zab_host.hostid,
-                                                        "groups": groups_list})
+        interfaces_list = json.loads(zab_host.interfaces)
+        for interface in interfaces_list:
+            interface.pop("interfaceid")
+            interface.pop("hostid")
+        _host = {"host": zab_host.host, "name": zab_host.name, "groups": groups_list, "interfaces": interfaces_list}
+        resp = self.zabbix_obj.zabbix_api.do_request('host.create', _host)["result"]
+        zab_host.hostid = resp["hostids"][0]
+        app_cli.write_log_file(self.log_path,
+                               "HOST CREATED: host=" + zab_host.host + "; hostid= " + zab_host.hostid)
+        print(zab_host.hostid)
+
+    def upd_config(self, zab_host: ZabbixHost, is_new):
+        """Обновление конфигурации айтема"""
+
+        if not is_new:
+            # основные параметры: name, host
+            base = self.zabbix_obj.zabbix_api.do_request('host.update',
+                                                         {"hostid": zab_host.hostid, "name": zab_host.name,
+                                                          "host": zab_host.host})
+            # интерфейсы
+
+            interfaces_list = json.loads(zab_host.interfaces)
+            interfaces = self.zabbix_obj.zabbix_api.do_request('host.update',
+                                                               {"hostid": zab_host.hostid,
+                                                                "interfaces": interfaces_list})
+            # группы
+            groups_list = json.loads(zab_host.groups)
+            groups = self.zabbix_obj.zabbix_api.do_request('host.update',
+                                                           {"hostid": zab_host.hostid,
+                                                            "groups": groups_list})
         # шаблоны
         templates_list = json.loads(zab_host.templates)
         templates = self.zabbix_obj.zabbix_api.do_request('host.update',
