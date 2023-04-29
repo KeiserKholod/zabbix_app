@@ -25,13 +25,17 @@ class ZabbixConfigGetter:
 
     def get_all_objects_configs(self):
         """Получение шаблонов, групп, макросов, интерфейсов, не наследуемых, не discovered айтемов"""
-        for host in self.current_hosts:
-            self._get_host_templates(host)
-            self._get_host_groups(host)
-            self._get_host_macros(host)
-            self._get_host_interfaces(host)
-            self._get_host_items(host)
-            self.do_log(host)
+        try:
+            for host in self.current_hosts:
+                self._get_host_templates(host)
+                self._get_host_groups(host)
+                self._get_host_macros(host)
+                self._get_host_interfaces(host)
+                self._get_host_items(host)
+                self.do_log(host)
+        except KeyboardInterrupt as e:
+            pass
+
 
     def write_configs_on_disk(self):
         """Запись конфигураций в файлы на диск"""

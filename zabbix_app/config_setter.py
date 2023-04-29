@@ -54,9 +54,12 @@ class ZabbixConfigSetter:
         return zab_host
 
     def upd_config_for_all(self):
-        for hostname in self.hosts_to_change:
-            zab_host = self.get_data_from_file(hostname)
-            self.upd_config(zab_host)
+        try:
+            for hostname in self.hosts_to_change:
+                zab_host = self.get_data_from_file(hostname)
+                self.upd_config(zab_host)
+        except KeyboardInterrupt as e:
+            pass
 
     def upd_config(self, zab_host: ZabbixHost):
         """Обновление конфигурации айтема"""
