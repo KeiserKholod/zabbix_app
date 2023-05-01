@@ -91,9 +91,12 @@ class ZabbixConfigSetter:
         _host = {"host": zab_host.host, "name": zab_host.name, "groups": groups_list, "interfaces": interfaces_list}
         resp = self.zabbix_obj.zabbix_api.do_request('host.create', _host)["result"]
         zab_host.hostid = resp["hostids"][0]
+        zab_host.non_templates_items = json.loads(zab_host.non_templates_items)
+        for item in zab_host.non_templates_items:
+            item["hostid"] = zab_host.hostid
+
         app_cli.write_log_file(self.log_path,
                                "HOST CREATED: host=" + zab_host.host + "; hostid= " + zab_host.hostid)
-        print(zab_host.hostid)
 
     def upd_config(self, zab_host: ZabbixHost, is_new):
         """Обновление конфигурации айтема"""
@@ -104,11 +107,19 @@ class ZabbixConfigSetter:
                                                          {"hostid": zab_host.hostid, "name": zab_host.name,
                                                           "host": zab_host.host})
             # интерфейсы
-
             interfaces_list = json.loads(zab_host.interfaces)
+            cg = ZabbixConfigGetter([zab_host], self.args)
+            cg._get_host_interfaces(zab_host)
+            _interfaces = cg.current_hosts[0].interfaces
+
+            for interface in interfaces_list:
+                if interface not in _interfaces:
+                    interface.pop("interfaceid")
+                    interface.pop("hostid")
+
             interfaces = self.zabbix_obj.zabbix_api.do_request('host.update',
                                                                {"hostid": zab_host.hostid,
-                                                                "interfaces": interfaces_list})
+                                                                "interfaces": interfaces_list})["result"]
             # группы
             groups_list = json.loads(zab_host.groups)
             groups = self.zabbix_obj.zabbix_api.do_request('host.update',
@@ -133,7 +144,9 @@ class ZabbixConfigSetter:
     def _upd_or_create_item(self, zab_host):
         """ Поочередная отправка параметров айтема для обновления. Для избегания ошибок их обнаружения.
          Если айтема не существует, то он создается."""
-        items_list = json.loads(zab_host.non_templates_items)
+        items_list = zab_host.non_templates_items
+        if type(zab_host.non_templates_items) is str:
+            items_list = json.loads(zab_host.non_templates_items)
         for item in items_list:
             exist = True
             try:
