@@ -15,21 +15,31 @@ class GitInterractor:
         current_dir = os.getcwd()
 
         os.chdir(path_to_dir)
-        answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
+        answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        answ = answ.stdout.decode("utf-8")
+        answ = answ.__str__()
         if answ.find("not a git repository") > -1:
             app_cli.write_log_file(all_args["log"], "GIT: Creating git-repo")
-            answ = subprocess.run(["git", "init"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
+            answ = subprocess.run(["git", "init"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            answ = answ.stdout.decode("utf-8")
+            answ = answ.__str__()
             if answ.find("initialized") > -1:
                 os.chdir(current_dir)
                 app_cli.write_log_file(all_args["log"], "GIT: Repo initialized in " + path_to_dir)
                 os.chdir(path_to_dir)
 
-        answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).__str__()
+        answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        answ = answ.stdout.decode("utf-8")
+        answ = answ.__str__()
         if answ.find("untracked files present") > -1 or answ.find("Changes not staged for commit") > -1:
             answ = subprocess.run(["git", "add", "*"], stdout=subprocess.PIPE,
-                                  stderr=subprocess.STDOUT).__str__()
+                                  stderr=subprocess.STDOUT)
+            answ = answ.stdout.decode("utf-8")
+            answ = answ.__str__()
             answ = subprocess.run(["git", "commit", "-m", '"message"'], stdout=subprocess.PIPE,
-                                  stderr=subprocess.STDOUT).__str__()
+                                  stderr=subprocess.STDOUT)
+            answ = answ.stdout.decode("utf-8")
+            answ = answ.__str__()
             os.chdir(current_dir)
             app_cli.write_log_file(all_args["log"], "GIT: Commit created")
             os.chdir(path_to_dir)
