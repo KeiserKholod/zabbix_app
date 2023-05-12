@@ -18,13 +18,11 @@ class GitInterractor:
         answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         answ = answ.stdout.decode("utf-8")
         answ = answ.__str__()
-        print(answ)
         if answ.find("not a git repository") > -1 or answ.find("Не найден") > -1:
             app_cli.write_log_file(all_args["log"], "GIT: Creating git-repo")
             answ = subprocess.run(["git", "init"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             answ = answ.stdout.decode("utf-8")
             answ = answ.__str__()
-            print(answ)
 
             if answ.find("initialized") > -1 or answ.find("Инициализирован") > -1 or answ.find("инициализирован") > -1:
                 os.chdir(current_dir)
