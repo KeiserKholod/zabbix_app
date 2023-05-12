@@ -23,7 +23,7 @@ class GitInterractor:
             answ = subprocess.run(["git", "init"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             answ = answ.stdout.decode("utf-8")
             answ = answ.__str__()
-            if answ.find("initialized") > -1 or answ.find("Инициализирован") > -1:
+            if answ.find("initialized") > -1 or answ.find("Инициализирован") > -1 or answ.find("инициализирован") > -1:
                 os.chdir(current_dir)
                 app_cli.write_log_file(all_args["log"], "GIT: Repo initialized in " + path_to_dir)
                 os.chdir(path_to_dir)
@@ -32,7 +32,7 @@ class GitInterractor:
         answ = answ.stdout.decode("utf-8")
         answ = answ.__str__()
         if answ.find("untracked files present") > -1 or answ.find("Неотслеживаемые файлы") > -1 or answ.find(
-                "Changes not staged for commit") > -1 or answ.find("ничего не добавлено") > -1:
+                "Changes not staged for commit") > -1:
             answ = subprocess.run(["git", "add", "*"], stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT)
             answ = answ.stdout.decode("utf-8")
