@@ -25,6 +25,7 @@ class GitInterractor:
             answ = answ.stdout.decode("utf-8")
             answ = answ.__str__()
             print(answ)
+
             if answ.find("initialized") > -1 or answ.find("Инициализирован") > -1 or answ.find("инициализирован") > -1:
                 os.chdir(current_dir)
                 app_cli.write_log_file(all_args["log"], "GIT: Repo initialized in " + path_to_dir)
