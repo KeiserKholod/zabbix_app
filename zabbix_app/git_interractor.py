@@ -16,12 +16,12 @@ class GitInterractor:
 
         os.chdir(path_to_dir)
         answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        print(answ.stdout.decode("utf-8"))
+        answ = answ.stdout.decode("utf-8")
         answ = answ.__str__()
         if answ.find("not a git repository") > -1 or answ.find("Не найден") > -1:
             app_cli.write_log_file(all_args["log"], "GIT: Creating git-repo")
             answ = subprocess.run(["git", "init"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            print(answ.stdout.decode("utf-8"))
+            answ = answ.stdout.decode("utf-8")
             answ = answ.__str__()
             if answ.find("initialized") > -1 or answ.find("Инициализирован") > -1:
                 os.chdir(current_dir)
@@ -29,7 +29,7 @@ class GitInterractor:
                 os.chdir(path_to_dir)
 
         answ = subprocess.run(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        print(answ.stdout.decode("utf-8"))
+        answ = answ.stdout.decode("utf-8")
         answ = answ.__str__()
         if answ.find("untracked files present")  > -1 or answ.find("неотслеживаемые файлы") > -1 or answ.find("Changes not staged for commit") > -1 or answ.find("ничего не добавлено") > -1:
             answ = subprocess.run(["git", "add", "*"], stdout=subprocess.PIPE,
