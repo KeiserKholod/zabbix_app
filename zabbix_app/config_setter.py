@@ -17,9 +17,11 @@ class ZabbixConfigSetter:
         self.args = args
         self.hosts_to_change = host_list
         self.err_lvl = 0
+        self.served = 0
 
     def do_log(self, zab_host):
         if self.err_lvl == 0:
+            self.served += 1
             app_cli.write_log_file(self.log_path, "OK UPDATING: " + zab_host.host)
         else:
             app_cli.write_log_file(self.log_path, "ERROR UPDATING: " + zab_host.host)
