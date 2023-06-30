@@ -58,7 +58,6 @@ class ZabbixObject:
                 break
         return parts
 
-
 class ZabbixHost:
     """Обьект для хранения информации о хосте"""
 
@@ -66,6 +65,9 @@ class ZabbixHost:
         self.name = ""
         self.hostid = ""
         self.host = ""
+        self.status = ""
+        self.description = ""
+        self.proxy_hostid = ""
         self.groups = []
         self.macros = []
         self.templates = []

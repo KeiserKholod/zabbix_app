@@ -2,16 +2,18 @@ import argparse
 import sys
 import time
 from datetime import datetime
+import os 
 
 
 class TimeMeasurement():
     """Класс для хранения и вывода на экран информации по времени работы программы"""
 
     def __init__(self, total_time):
-        self.total_time = total_time
-        self.hours = int(self.total_time // 360)
-        self.minutes = int((self.total_time - self.hours * 360) // 60)
-        self.seconds = int(self.total_time - self.hours * 360 - self.minutes * 60)
+        self.total_time = total_time.__str__()
+        parsed = self.total_time.split(":") #hour,min,sec.ms
+        self.hours = int(parsed[0])
+        self.minutes = int(parsed[1])
+        self.seconds = int(float(parsed[2]))
 
     def __str__(self):
         return "TOTAL TIME: " + str(self.hours) + \
@@ -26,7 +28,8 @@ class TimeMeasurement():
 class InitArgsParser():
     """Класс для сбора и хранения аргументов и конфгураций из коммандной строки и файла zabapp.conf"""
 
-    def __init__(self):
+    def __init__(self, dir_path):
+        self.dir_path = dir_path
         self.parser = self.create_cli_parser()
         self.cli_args_obj = self.parser.parse_args()
         self.cli_args_dict = self.__get_cli_dict(vars(self.cli_args_obj))
@@ -46,7 +49,7 @@ class InitArgsParser():
         parser.add_argument('-g', '--git', default=None, dest="git",
                             help='Адрес GIT-сервера')
         parser.add_argument('-c', '--conf', default=None, dest="conf_file",
-                            help='Изменить адрес конфигурационного файла <filename>')
+                            help='Изменить адрес конфигурационного файла zabapp.conf <filepath>')
         parser.add_argument('-u', '--cpu', default=None, dest="max_cpu",
                             help='Максимальное количество логических процессоров, занимаемое программой')
         parser.add_argument('-s', '--set', action='store_true', dest="set_conf",
@@ -55,7 +58,7 @@ class InitArgsParser():
 
     def get_config_args(self):
         """Получает данные из конфигурационного файла без комментариев"""
-        conf_file = "zabapp.conf"
+        conf_file = os.path.join(self.dir_path, "zabapp.conf")
         keys = self.cli_args_dict.keys()
         if keys.__contains__("conf_file"):
             conf_file = self.cli_args_dict["conf_file"]
